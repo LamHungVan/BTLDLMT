@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create ({
-    baseURL: 'http://localhost:1880',
+    baseURL: 'https://mqttproject-crbmgbarbjf5c5cb.southeastasia-01.azurewebsites.net/',
     headers : {
       'Content-Type' : 'application/json',
     },

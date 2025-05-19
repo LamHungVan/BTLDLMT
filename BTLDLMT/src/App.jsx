@@ -10,20 +10,34 @@ function App() {
   const [temperature, setTemperature] = useState(null)
   const [humidity, setHumidity] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [motorActive, setMotorActive] = useState(0);
   
   useEffect(() => {
     const GetApi = async() => {
         const data = await getDataApi.getData();
-
         console.log(data)
         setHumidity(data.hum);
-        setTemperature(data.temp);
+        setTemperature(data.value);
         setLoading(false);
+
+        // setLoading(false);
+        // setHumidity(50);
+        // setTemperature(25);
     };
 
+    // Call GetApi immediately when component mounts
     GetApi();
+
+    // Set up interval to fetch data every 5 seconds
+    const interval = setInterval(() => {
+      GetApi();
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, []);
+
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -58,6 +72,11 @@ function App() {
   const formatTime = (date) => {
     const options = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
     return date.toLocaleTimeString('en-US', options);
+  };
+
+  const updateMotorStatus = async (isOn) => {
+    setMotorActive(isOn);
+    await getDataApi.updateMotorStatus(isOn);
   };
 
   return (
@@ -174,6 +193,32 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                   {/* Sensor */}
+                <div className="widget">
+                  <h3>Motor</h3>
+                  <div className="motor-control">
+                    <span className={`material-icons motor-icon rotating ${motorActive ? 'active' : ''}`}>settings</span>
+                    <div className="motor-status">Status: {motorActive ? 'ON' : 'OFF'}</div>
+                    <div className="motor-buttons">
+                      <button 
+                        className="motor-btn on" 
+                        onClick={() => updateMotorStatus(1)}
+                        disabled={motorActive}
+                      >
+                        ON
+                      </button>
+                      <button 
+                        className="motor-btn off"
+                        onClick={() => updateMotorStatus(0)}
+                        disabled={!motorActive}
+                      >
+                        OFF
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>

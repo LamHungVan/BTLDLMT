@@ -303,8 +303,8 @@
 
 .widgets-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  margin-top: 20px;
 }
 
 .widgets-grid.humidity-only {
@@ -319,16 +319,15 @@
 }
 
 .widgets-grid.two-widgets {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  max-width: 800px;
-  margin: 0 auto;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .widgets-grid.two-widgets .widget {
-  width: 100%;
-  margin: 0;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .widget {
@@ -564,4 +563,78 @@
   margin-top: 20px;
   font-size: 16px;
   color: #66a6ff;
+}
+
+.motor-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.motor-icon {
+  font-size: 3.5rem !important;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.motor-icon.active {
+  color: #66a6ff;
+}
+
+.motor-status {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.motor-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.motor-btn {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.motor-btn.on {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.motor-btn.on:hover {
+  background-color: #45a049;
+}
+
+.motor-btn.off {
+  background-color: #f44336;
+  color: white;
+}
+
+.motor-btn.off:hover {
+  background-color: #da190b;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.motor-icon.rotating {
+  animation: rotate 2s linear infinite;
+  animation-play-state: paused;
+}
+
+.motor-icon.rotating.active {
+  animation-play-state: running;
 }
