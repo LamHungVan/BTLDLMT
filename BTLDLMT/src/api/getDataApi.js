@@ -1,8 +1,13 @@
 import axiosClient from "./axiosClient";
 
 const getDataApi = {
-    getData(params) {
-        const url = 'api/SensorLogs';
+    getTemperatureData(params) {
+        const url = 'api/SensorLogs/Temperature';
+        return axiosClient.get(url, {params});
+    },
+
+    getHumidityData(params) {
+        const url = 'api/SensorLogs/Humidity';
         return axiosClient.get(url, {params});
     },
 
