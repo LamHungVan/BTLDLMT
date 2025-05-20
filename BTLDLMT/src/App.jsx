@@ -5,6 +5,8 @@ import { Chart as ChartJs} from 'chart.js/auto';
 import { Line } from 'react-chartjs-2'
 import './App.css'
 
+
+
 function App() {
   const [tempUnit, setTempUnit] = useState('C')
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -15,6 +17,8 @@ function App() {
   const [temperature1, setTemperature1] = useState(null);
   const [temperatureChart, setTemperatureChart] = useState([]);
   const [humidityChart, setHumidityChart] = useState([]);
+  const [tempAxisVisible, setTempAxisVisible] = useState(true);
+  const [humidityAxisVisible, setHumidityAxisVisible] = useState(true);
 
   
 
@@ -44,13 +48,13 @@ function App() {
         setTemperatureChart(prevData => {
           const newData = [...prevData, newTemp];
           // Keep only the last 10 data points to prevent memory issues
-          return newData.slice(-5);
+          return newData.slice(-10);
         });
         
         setHumidityChart(prevData => {
           const newData = [...prevData, newHumidity];
           // Keep only the last 10 data points to prevent memory issues
-          return newData.slice(-5);
+          return newData.slice(-10);
         });
     };
 
@@ -109,11 +113,11 @@ function App() {
   const formatChartTime = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  // Prepare chart data
-  const chartData = {
+  // Prepare combined chart data
+  const combinedChartData = {
     labels: temperatureChart.slice(-5).reverse().map(data => formatChartTime(data.timeStamp)),
     datasets: [
       {
@@ -127,14 +131,9 @@ function App() {
         pointBorderColor: 'white',
         pointBorderWidth: 2,
         pointRadius: 5,
-      }
-    ]
-  };
-
-  // Prepare humidity chart data
-  const humidityChartData = {
-    labels: humidityChart.slice(-5).reverse().map(data => formatChartTime(data.timeStamp)),
-    datasets: [
+        yAxisID: 'y', // Left y-axis
+        hidden: !tempAxisVisible
+      },
       {
         label: 'Humidity (%)',
         data: humidityChart.slice(-5).reverse().map(data => data.humidity),
@@ -146,23 +145,30 @@ function App() {
         pointBorderColor: 'white',
         pointBorderWidth: 2,
         pointRadius: 5,
+        yAxisID: 'y1', // Right y-axis
+        hidden: !humidityAxisVisible
       }
     ]
   };
 
-  // Chart options
-  const chartOptions = {
+  // Combined chart options
+  const combinedChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
       y: {
-        beginAtZero: false,
+        type: 'linear',
+        display: tempAxisVisible,
+        position: 'left',
+        beginAtZero: true,
+        min: 0,
+        max: tempUnit === 'C' ? 40 : 122, // Dynamic max based on temperature unit (122°F is ~50°C)
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
           drawBorder: true,
         },
         ticks: {
-          color: '#666',
+          color: '#3366FF',
           font: {
             size: 12,
           },
@@ -174,79 +180,25 @@ function App() {
         title: {
           display: true,
           text: tempUnit === 'C' ? 'Temperature (°C)' : 'Temperature (°F)',
-          color: '#666',
+          color: '#3366FF',
           font: {
             size: 14,
             weight: 'bold'
           }
         }
       },
-      x: {
+      y1: {
+        type: 'linear',
+        display: humidityAxisVisible,
+        position: 'right',
+        beginAtZero: true,
+        min: 0,
+        max: 100, // Set max for humidity scale (percentage)
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-          drawBorder: true,
+          drawOnChartArea: false, // only want the grid lines for one axis to show up
         },
         ticks: {
-          color: '#666',
-          font: {
-            size: 12,
-          },
-
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-        align: 'start',
-        labels: {
-          boxWidth: 40,
-          color: '#666',
-          font: {
-            size: 12,
-          },
-          usePointStyle: false,
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        titleColor: '#333',
-        bodyColor: '#333',
-        borderColor: 'rgba(0, 0, 0, 0.1)',
-        borderWidth: 1,
-        padding: 10,
-        displayColors: true,
-      }
-    },
-    elements: {
-      line: {
-        borderWidth: 3,
-      },
-      point: {
-        hoverRadius: 7,
-        radius: 5,
-      }
-    },
-    layout: {
-      padding: 20
-    },
-    backgroundColor: 'white',
-  };
-
-  // Humidity chart options
-  const humidityChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: false,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-          drawBorder: true,
-        },
-        ticks: {
-          color: '#666',
+          color: '#4CAF50',
           font: {
             size: 12,
           },
@@ -258,7 +210,7 @@ function App() {
         title: {
           display: true,
           text: 'Humidity (%)',
-          color: '#666',
+          color: '#4CAF50',
           font: {
             size: 14,
             weight: 'bold'
@@ -282,7 +234,7 @@ function App() {
       legend: {
         display: true,
         position: 'top',
-        align: 'start',
+        align: 'center',
         labels: {
           boxWidth: 40,
           color: '#666',
@@ -290,6 +242,30 @@ function App() {
             size: 12,
           },
           usePointStyle: false,
+        },
+        onClick: (evt, item, legend) => {
+          // Call the original legend click handler
+          ChartJs.defaults.plugins.legend.onClick(evt, item, legend);
+          
+          // Get the index of the clicked dataset
+          const index = item.datasetIndex;
+          
+          // After toggling visibility, check if datasets are visible
+          const chart = legend.chart;
+          
+          // Update y-axis visibility based on dataset visibility
+          if (index === 0) { // Temperature dataset
+            const isVisible = chart.isDatasetVisible(0);
+            setTempAxisVisible(isVisible);
+            chart.options.scales.y.display = isVisible;
+          } else if (index === 1) { // Humidity dataset
+            const isVisible = chart.isDatasetVisible(1);
+            setHumidityAxisVisible(isVisible);
+            chart.options.scales.y1.display = isVisible;
+          }
+          
+          // Update the chart
+          chart.update();
         }
       },
       tooltip: {
@@ -377,15 +353,36 @@ function App() {
             </div>
             
      
-              <div className="charts-row" style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-                <div className="chart-container" style={{ flex: 1, height: '300px', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ marginTop: 0 }}>Temperature Chart</h3>
-                  <Line data={chartData} options={chartOptions} />
-                </div>
-                
-                <div className="chart-container" style={{ flex: 1, height: '300px', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ marginTop: 0 }}>Humidity Chart</h3>
-                  <Line data={humidityChartData} options={humidityChartOptions} />
+              <div className="charts-row" style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                width: '100%',
+                marginBottom: '20px' 
+              }}>
+                <div className="chart-container" style={{ 
+                  width: '100%', 
+                  height: 'calc(40vh)', 
+                  minHeight: '300px',
+                  padding: '20px', 
+                  backgroundColor: 'white', 
+                  borderRadius: '8px', 
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                  overflow: 'hidden'
+                }}>
+                  <h3 style={{ marginTop: 0 }}>Temperature & Humidity Chart</h3>
+                  <div style={{ width: '100%', height: 'calc(100% - 40px)' }}>
+                    <Line 
+                      data={combinedChartData} 
+                      options={{
+                        ...combinedChartOptions,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onResize: () => {
+                          // Optional: handle resize if needed
+                        }
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -427,20 +424,25 @@ function App() {
                     <span className={`material-icons motor-icon rotating ${motorActive ? 'active' : ''}`}>settings</span>
                     <div className="motor-status">Status: {motorActive ? 'ON' : 'OFF'}</div>
                     <div className="motor-buttons">
-                      <button 
-                        className="motor-btn on" 
-                        onClick={() => updateMotorStatus(1)}
-                        disabled={motorActive}
-                      >
-                        ON
-                      </button>
-                      <button 
-                        className="motor-btn off"
-                        onClick={() => updateMotorStatus(0)}
-                        disabled={!motorActive}
-                      >
-                        OFF
-                      </button>
+                      {
+                        motorActive === 1 ? (
+                          <button 
+                            className="motor-btn off"
+                            onClick={() => updateMotorStatus(0)}
+                            disabled={!motorActive}
+                          >
+                            OFF
+                          </button>
+                        ) : (
+                          <button 
+                            className="motor-btn on" 
+                            onClick={() => updateMotorStatus(1)}
+                            disabled={motorActive}
+                          >
+                            ON
+                          </button>
+                        )
+                    }
                     </div>
                   </div>
                 </div>
