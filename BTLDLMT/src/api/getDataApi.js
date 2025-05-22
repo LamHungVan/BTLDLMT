@@ -12,13 +12,13 @@ const getDataApi = {
     },
 
     updateMotorStatus(value) {
-        const url = `api/Motor/status/${value}`
-        return axiosClient.post(url);
+        const url = `api/SensorLogs`
+        return axiosClient.post(url, value);
     },
     
     updateMotorRotate(value) {
-        const url = `api/Motor/rotate/${value}`
-        return axiosClient.post(url);
+        const url = `api/SensorLogs`
+        return axiosClient.post(url, value);
     }
     
 };

@@ -8,13 +8,13 @@ import './App.css'
 
 
 function App() {
-  const [tempUnit, setTempUnit] = useState('C')
+  const [tempUnit, setTempUnit] = useState('C') 
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [temperature, setTemperature] = useState(null)
+  const [temperature, setTemperature] = useState(null) // độ C
   const [humidity, setHumidity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [motorActive, setMotorActive] = useState(0);
-  const [temperature1, setTemperature1] = useState(null);
+  const [temperature1, setTemperature1] = useState(null); // độ F
   const [temperatureChart, setTemperatureChart] = useState([]);
   const [humidityChart, setHumidityChart] = useState([]);
   const [tempAxisVisible, setTempAxisVisible] = useState(true);
@@ -107,7 +107,10 @@ function App() {
 
   const updateMotorStatus = async (isOn) => {
     setMotorActive(isOn);
-    await getDataApi.updateMotorStatus(isOn);
+    const value = {
+      status: isOn
+    }
+    await getDataApi.updateMotorStatus(value);
   };
 
   const formatChartTime = (timestamp) => {
@@ -162,7 +165,7 @@ function App() {
         position: 'left',
         beginAtZero: true,
         min: 0,
-        max: tempUnit === 'C' ? 40 : 122, // Dynamic max based on temperature unit (122°F is ~50°C)
+        max: tempUnit === 'C' ? 40 : 104, // Dynamic max based on temperature unit (122°F is ~50°C)
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
           drawBorder: true,
